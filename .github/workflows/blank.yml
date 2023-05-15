@@ -1,0 +1,31 @@
+name: Build Custom ROM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Android SDK
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y android-tools-adb android-tools-fastboot
+      - name: Clone AOSP Repository
+        run: |
+          git clone https://source.android.com/platform/manifest/
+      - name: Configure AOSP Repository
+        run: |
+          cd manifest
+          git checkout android-13
+      - name: Build AOSP Repository
+        run: |
+          ./gradlew assembleRelease
+      - name: Flash Custom ROM to Device
+        run: |
+          adb devices
+          adb reboot bootloader
+          fastboot flashall /home/<username>/manifest/out/target/product/<device>/release/flash.zip
